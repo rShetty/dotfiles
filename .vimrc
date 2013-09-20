@@ -1,4 +1,11 @@
+" Vundle Specific Stuff 
 
+ set rtp+=~/.vim/bundle/vundle/
+ call vundle#rc()
+
+" Different Vundle packages
+
+ Bundle 'thoughtbot/vim-rspec'
 
 " Prevent Vim Bad Habits
 inoremap <Up> <NOP>
@@ -43,7 +50,7 @@ map Q gq
 if (&t_Co > 2 || has("gui_running")) && !exists("syntax_on")
   syntax on
   set hlsearch
-  colorscheme solarized
+  colorscheme codeschool
 endif
 
 set guifont=Monaco:h12
@@ -314,3 +321,8 @@ nmap 9 :res-5<CR>
 nmap 0 :res+5<CR>
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
+
+map <Leader>t :call RunCurrentSpecFile()<CR>
+map <Leader>s :call RunNearestSpec()<CR>
+map <Leader>l :call RunLastSpec()<CR>
+map <Leader>a :call RunAllSpecs()<CR>
