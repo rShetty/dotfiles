@@ -15,6 +15,12 @@
 
 set guifont=Monaco:h12
 
+" Navigating among splits in Vim
+ nmap <Tab> <C-w>w
+
+ autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
+ autocmd FileType ruby compiler ruby
+
 " Leader shortcuts for Rails commands
  map <Leader>m :Rmodel
  map <Leader>c :Rcontroller
