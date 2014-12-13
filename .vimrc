@@ -3,7 +3,51 @@
 " vim:set ts=2 sts=2 sw=2 expandtab:
 "
 "
-" Prevent Vim Bad Habits
+call plug#begin('~/.vim/plugged')
+
+" Make sure you use single quotes
+ Plug 'junegunn/seoul256.vim'
+ Plug 'junegunn/vim-easy-align'
+
+" On-demand loading
+ Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+ Plug 'tpope/vim-fireplace', { 'for': 'clojure' }
+"
+" Using git URL
+ Plug 'https://github.com/junegunn/vim-github-dashboard.git'
+"
+" Plugin options
+ Plug 'nsf/gocode', { 'tag': 'go.weekly.2012-03-13', 'rtp': 'vim' }
+"
+" Plugin outside ~/.vim/plugged with post-update hook
+ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
+"
+"
+" Javascript Plugins
+
+ Plug 'jelera/vim-javascript-syntax'
+ Plug 'pangloss/vim-javascript'
+ Plug 'nathanaelkane/vim-indent-guides'
+ Plug 'Raimondi/delimitMate'
+ Plug 'scrooloose/syntastic'
+ Plug 'Valloric/YouCompleteMe'
+ Plug 'marijnh/tern_for_vim'
+
+" Ruby/Rails Plugins
+
+ Plug 'tpope/vim-bundler'
+ Plug 'thoughtbot/vim-rspec'
+ Plug 'tpope/vim-cucumber'
+ Plug 'junegunn/vim-easy-align'
+ Plug 'tpope/vim-endwise'
+ Plug 'tpope/vim-fugitive'
+ Plug 'tpope/vim-rails'
+ Plug 'vim-ruby/vim-ruby'
+
+call plug#end()
+
+ 
+"Prevent Vim Bad Habits
  inoremap <Up> <NOP>
  inoremap <Down> <NOP>
  inoremap <Left> <NOP>
@@ -13,7 +57,13 @@
  vnoremap <Left> <NOP>
  vnoremap <Right> <NOP>
 
+autocmd BufRead,BufNewFile *.md setlocal textwidth=80
+
 set guifont=Monaco:h12
+
+set relativenumber
+
+set runtimepath^=~/.vim/bundle/ctrlp.vim
 
 " Navigating among splits in Vim
  nmap <Tab> <C-w>w
@@ -21,28 +71,16 @@ set guifont=Monaco:h12
  autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
  autocmd FileType ruby compiler ruby
 
-" Leader shortcuts for Rails commands
- map <Leader>m :Rmodel
- map <Leader>c :Rcontroller
- map <Leader>v :Rview
- map <Leader>u :Runittest
- map <Leader>f :Rfunctionaltest
- map <Leader>tm :RTmodel
- map <Leader>tc :RTcontroller
- map <Leader>tv :RTview
- map <Leader>tu :RTunittest
- map <Leader>tf :RTfunctionaltest
- map <Leader>sm :RSmodel
- map <Leader>sc :RScontroller
- map <Leader>sv :RSview
- map <Leader>su :RSunittest
- map <Leader>sf :RSfunctionaltest
-
  " Resizing Splits in vim
  nmap 7 :vertical res-5<CR>
  nmap 8 :vertical res+5<CR>
  nmap 9 :res-5<CR>
  nmap 0 :res+5<CR>
+
+ if executable('ag')
+   " Use Ag over Grep
+   set grepprg=ag\ --nogroup\ --nocolor
+ endif
 
 autocmd!
 
@@ -52,7 +90,7 @@ call pathogen#incubate()
 " BASIC EDITING CONFIGURATION
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set nocompatible
-" allow unsaved background buffers and remember marks/undo for them
+" allow ensaved background buffers and remember marks/undo for them
 set hidden
 " remember more commands and search history
 set history=10000
@@ -197,6 +235,7 @@ function! FocusOnFile()
 endfunction
 " Reload in chrome
 map <leader>l :w\|:silent !reload-chrome<cr>
+
 " Align selected lines
 vnoremap <leader>ib :!align<cr>
 
@@ -220,7 +259,7 @@ inoremap <s-tab> <c-n>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 cnoremap %% <C-R>=expand('%:h').'/'<cr>
 map <leader>e :edit %%
-map <leader>v :view %%
+map <leader>o :view %%
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RENAME CURRENT FILE
@@ -298,28 +337,6 @@ endfunction
 nnoremap <leader>ri :call InlineVariable()<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" MAPS TO JUMP TO SPECIFIC COMMAND-T TARGETS AND FILES
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-map <leader>gr :topleft :split config/routes.rb<cr>
-function! ShowRoutes()
-  " Requires 'scratch' plugin
-  :topleft 100 :split __Routes__
-  " Make sure Vim doesn't write __Routes__ as a file
-  :set buftype=nofile
-  " Delete everything
-  :normal 1GdG
-  " Put routes output in buffer
-  :0r! rake -s routes
-  " Size window to number of lines (1 plus rake output length)
-  :exec ":normal " . line("$") . "_ "
-  " Move cursor to bottom
-  :normal 1GG
-  " Delete empty trailing line
-  :normal dd
-endfunction
-map <leader>gR :call ShowRoutes()<cr>
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " SWITCH BETWEEN TEST AND PRODUCTION CODE
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! OpenTestAlternate()
@@ -348,77 +365,6 @@ function! AlternateForCurrentFile()
   return new_file
 endfunction
 nnoremap <leader>. :call OpenTestAlternate()<cr>
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" RUNNING TESTS
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! MapCR()
-  nnoremap <cr> :call RunTestFile()<cr>
-endfunction
-call MapCR()
-nnoremap <leader>T :call RunNearestTest()<cr>
-nnoremap <leader>a :call RunTests('')<cr>
-nnoremap <leader>c :w\|:!script/features<cr>
-nnoremap <leader>w :w\|:!script/features --profile wip<cr>
-
-function! RunTestFile(...)
-    if a:0
-        let command_suffix = a:1
-    else
-        let command_suffix = ""
-    endif
-
-    " Run the tests for the previously-marked file.
-    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\)$') != -1
-    if in_test_file
-        call SetTestFile()
-    elseif !exists("t:grb_test_file")
-        return
-    end
-    call RunTests(t:grb_test_file . command_suffix)
-endfunction
-
-function! RunNearestTest()
-    let spec_line_number = line('.')
-    call RunTestFile(":" . spec_line_number)
-endfunction
-
-function! SetTestFile()
-    " Set the spec file that tests will be run for.
-    let t:grb_test_file=@%
-endfunction
-
-function! RunTests(filename)
-    " Write the file and run tests for the given filename
-    if expand("%") != ""
-      :w
-    end
-    if match(a:filename, '\.feature$') != -1
-        exec ":!script/features " . a:filename
-    else
-        " First choice: project-specific test script
-        if filereadable("script/test")
-            exec ":!script/test " . a:filename
-        " Fall back to the .test-commands pipe if available, assuming someone
-        " is reading the other side and running the commands
-        elseif filewritable(".test-commands")
-          let cmd = 'rspec --color --format progress --require "~/lib/vim_rspec_formatter" --format VimFormatter --out tmp/quickfix'
-          exec ":!echo " . cmd . " " . a:filename . " > .test-commands"
-
-          " Write an empty string to block until the command completes
-          sleep 100m " milliseconds
-          :!echo > .test-commands
-          redraw!
-        " Fall back to a blocking test run with Bundler
-        elseif filereadable("Gemfile")
-            exec ":!bundle exec rspec --color " . a:filename
-        " Fall back to a normal blocking test run
-        else
-            exec ":!rspec --color " . a:filename
-        end
-    end
-endfunction
-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Md5 COMMAND
@@ -504,65 +450,6 @@ nnoremap <leader>Q :cc<cr>
 nnoremap <leader>j :cnext<cr>
 nnoremap <leader>k :cprev<cr>
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" RemoveFancyCharacters COMMAND
-" Remove smart quotes, etc.
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! RemoveFancyCharacters()
-    let typo = {}
-    let typo["“"] = '"'
-    let typo["”"] = '"'
-    let typo["‘"] = "'"
-    let typo["’"] = "'"
-    let typo["–"] = '--'
-    let typo["—"] = '---'
-    let typo["…"] = '...'
-    :exe ":%s/".join(keys(typo), '\|').'/\=typo[submatch(0)]/ge'
-endfunction
-command! RemoveFancyCharacters :call RemoveFancyCharacters()
-
-call plug#begin('~/.vim/plugged')
-
-" Make sure you use single quotes
- Plug 'junegunn/seoul256.vim'
- Plug 'junegunn/vim-easy-align'
-"
-" On-demand loading
- Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
- Plug 'tpope/vim-fireplace', { 'for': 'clojure' }
-"
-" Using git URL
- Plug 'https://github.com/junegunn/vim-github-dashboard.git'
-"
-" Plugin options
- Plug 'nsf/gocode', { 'tag': 'go.weekly.2012-03-13', 'rtp': 'vim' }
-"
-" Plugin outside ~/.vim/plugged with post-update hook
- Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': 'yes \| ./install' }
-"
-
-" Javascript Plugins
-
- Plug 'jelera/vim-javascript-syntax'
- Plug 'pangloss/vim-javascript'
- Plug 'nathanaelkane/vim-indent-guides'
- Plug 'Raimondi/delimitMate'
- Plug 'scrooloose/syntastic'
- Plug 'Valloric/YouCompleteMe'
- Plug 'marijnh/tern_for_vim'
-
-" Ruby/Rails Plugins
-
- Plug 'tpope/vim-bundler'
- Plug 'tpope/vim-cucumber'
- Plug 'junegunn/vim-easy-align'
- Plug 'tpope/vim-endwise'
- Plug 'tpope/vim-fugitive'
- Plug 'tpope/vim-rails'
- Plug 'vim-ruby/vim-ruby'
-
-call plug#end()
-
 " Color Scheme
 let g:seoul256_background = 235
 colo seoul256
@@ -572,5 +459,26 @@ let g:ycm_add_preview_to_completeopt=0
 let g:ycm_confirm_extra_conf=0
 set completeopt-=preview
 
+" Leader shortcuts for Rails commands
+ map <Leader>m :Rmodel<CR>
+ map <Leader>c :Rcontroller<CR>
+ map <Leader>v :Rview<CR>
+ map <Leader>u :Runittest<CR>
+ map <Leader>f :Rfunctionaltest<CR>
+ map <Leader>tm :RTmodel<CR>
+ map <Leader>tc :RTcontroller<CR>
+ map <Leader>tv :RTview<CR>
+ map <Leader>tu :RTunittest<CR>
+ map <Leader>tf :RTfunctionaltest<CR>
+ map <Leader>sm :RSmodel<CR>
+ map <Leader>sc :RScontroller<CR>
+ map <Leader>sv :RSview<CR>
+ map <Leader>su :RSunittest<CR>
+ map <Leader>sf :RSfunctionaltest<CR>
 
+" vim-rspec mappings
+nnoremap <Leader>t :call RunCurrentSpecFile()<CR>
+nnoremap <Leader>s :call RunNearestSpec()<CR>
+nnoremap <Leader>l :call RunLastSpec()<CR>
 
+let g:rspec_command = "Dispatch rspec {spec}"
