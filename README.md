@@ -1,0 +1,4 @@
+# Dotfiles
+
+
+Run ./setup.sh
