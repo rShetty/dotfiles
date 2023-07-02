@@ -10,7 +10,7 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 echo "installing homebrew packages"
-brew bundle --file ./Brewfile
+brew install --file ./Brewfile
 
 # install tmux plugins
 echo "installing tmux plugins..."
@@ -21,6 +21,8 @@ mkdir -p ~/.config
 cp ./alacritty.yml ~/.config/alacritty.yml
 cp ./color.yml ~/.config/color.yml
 cp .tmux.conf ~/.tmux.conf
+cp -R .hammerspoon/ ~/.hammerspoon
+cp .irbrc ~/.irbrc
 
 echo '[ -f $HOMEBREW_PREFIX/etc/profile.d/autojump.sh ] && . $HOMEBREW_PREFIX/etc/profile.d/autojump.sh' >> ~/.zshrc
 

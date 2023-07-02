@@ -103,5 +103,3 @@ source $ZSH/oh-my-zsh.sh
 if [ -r ~/.zshrc ]; then echo 'export GPG_TTY=$(tty)' >> ~/.zshrc; \
   else echo 'export GPG_TTY=$(tty)' >> ~/.zprofile; fi
 export GPG_TTY=$(tty)
-export GPG_TTY=$(tty)
-export GPG_TTY=$(tty)

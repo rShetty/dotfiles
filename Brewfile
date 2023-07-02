@@ -14,4 +14,3 @@ brew "watch"
 brew "wget"
 brew 'gpg'
 brew 'autojump'
-
